@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useOutletContext } from "react-router";
 import { Upload as UploadIcon, CheckCircle2, Image as ImageIcon } from "lucide-react";
 import { PROGRESS_STEP, PROGRESS_INTERVAL_MS, REDIRECT_DELAY_MS } from '../lib/constants';
@@ -14,20 +14,48 @@ const Upload = ({ onComplete }: UploadProps) => {
 
     const { isSignedIn } = useOutletContext<AuthContext>();
 
+    // Refs to store timer IDs for cleanup
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Cleanup effect to clear timers on unmount
+    useEffect(() => {
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
+
     const processFile = (file: File) => {
         if (!isSignedIn) return;
 
+        // Clear any existing timers
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+
+        // Reset progress to 0 for new upload
+        setProgress(0);
         setFile(file);
 
         const reader = new FileReader();
         reader.onload = (e) => {
             const result = e.target?.result as string;
 
-            const interval = setInterval(() => {
+            intervalRef.current = setInterval(() => {
                 setProgress((prev) => {
                     if (prev >= 100) {
-                        clearInterval(interval);
-                        setTimeout(() => {
+                        if (intervalRef.current) {
+                            clearInterval(intervalRef.current);
+                        }
+                        timeoutRef.current = setTimeout(() => {
                             onComplete?.(result);
                         }, REDIRECT_DELAY_MS);
                         return 100;
