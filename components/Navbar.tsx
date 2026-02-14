@@ -3,7 +3,7 @@ import Button from "./ui/Button";
 import { useOutletContext } from "react-router";
 
 const Navbar = () => {
-    const { isSignedIn, username, signIn, signOut } = useOutletContext<AuthContext>();
+    const { isSignedIn, userName, signIn, signOut } = useOutletContext<AuthContext>();
 
     const handleAuthClick = async () => {
         try {
@@ -37,7 +37,7 @@ const Navbar = () => {
                 <div className="actions">
                     {isSignedIn ? (
                         <>
-                            <span className="greeting">{username ? `Hi, ${username}` : 'Signed In'}</span>
+                            <span className="greeting">{userName ? `Hi, ${userName}` : 'Signed In'}</span>
 
                             <Button size="sm" className="btn" onClick={handleAuthClick}>Log Out</Button>
                         </>
