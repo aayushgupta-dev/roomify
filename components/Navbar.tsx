@@ -1,14 +1,21 @@
 import { Box } from "lucide-react";
 import Button from "./ui/Button";
-
+import { useOutletContext } from "react-router";
 
 const Navbar = () => {
+    const { isSignedIn, username, signIn, signOut } = useOutletContext<AuthContext>();
+
     const handleAuthClick = async () => {
-
+        try {
+            if (!isSignedIn) {
+                await signIn();
+            } else {
+                await signOut();
+            }
+        } catch (error) {
+            console.error("Auth action failed:", error);
+        }
     }
-
-    const isSignedIn = false;
-    const username = 'aayush'; // Will always be lowercase.
 
     return (
         <header className="navbar">
